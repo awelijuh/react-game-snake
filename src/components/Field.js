@@ -1,51 +1,71 @@
-import React from "react";
-import { Row, Col } from "react-bootstrap";
+import React, {useEffect, useState} from "react";
+import {Row, Col} from "react-bootstrap";
+import {BLOCK_SIZE, FIELD_SIZE} from "../utils/Const";
+import {createEmptyField, createFieldWithSnake} from "../utils/Utils";
 
-const width = 100;
-const height = 100;
-
-function createEmptyField() {
-    let field = []
-
-    for (let i = 0; i < height; i++) {
-        field.push([])
-        for (let j = 0; j < width; j++) {
-            field[i].push(0)
-        }
+function getAnimation(prev, curr) {
+    if (prev.y < curr.y) {
+        return 'left-to-right'
     }
-    return field
+    if (prev.y > curr.y) {
+        return 'right-to-left'
+    }
+    if (prev.x < curr.x) {
+        return 'top-to-bottom'
+    }
+    if (prev.x > curr.x) {
+        return 'bottom-to-top'
+    }
 }
 
+function FieldItem({isBody, isHead, isTail, isPoint, speed, animationClass}) {
 
-function FieldItem(props) {
+    let time = 1200 / speed;
 
     return (
-        <div style={{ width: 10, height: 10 }} className="border d-inline-block">
-            <div className="d-flex h-100">
-                <div className="m-auto" style={{ fontSize: '25px' }}>{value !== -1 ? value : ''}</div>
-            </div>
+        <div style={{width: BLOCK_SIZE, height: BLOCK_SIZE}}
+             className={`d-inline-block p-0 m-0 ${(isBody || isHead) && "bg-success"} ${isPoint && "bg-warning"}`}>
+            {
+                isHead &&
+                <div className={"bg-black w-100 h-100"}
+                     style={{position: 'relative', animation: `${animationClass} ${time}ms`}}/>
+            }
+            {
+                isTail &&
+                <div className={"bg-success w-100 h-100"}
+                     style={{position: 'relative', animation: `${animationClass} ${time}ms`}}/>
+            }
         </div>
     )
 }
 
 
-export default function Field(props) {
+export default function Field({snake, point, speed}) {
 
-    const field = createEmptyField()
+    const [field, setField] = useState(createEmptyField())
+
+    useEffect(() => {
+        setField(createFieldWithSnake(snake, point))
+    }, [snake])
 
     return (
-        <div>
+        <div className="border">
+
             {
-                field.map(row =>
-                    <Row>
+                field.map((row, i) =>
+                    <Row className="m-0">
                         {
-                            row.map(col =>
-                                <FieldItem />
+                            row.map((col, j) =>
+                                <FieldItem key={`key_${i}_${j}_${col}`} isBody={col === 1} isHead={col === 2}
+                                           isPoint={col === 3} speed={speed} isTail={col === 4}
+                                           animationClass={col === 2 ? getAnimation(snake.at(-2), snake.at(-1)) : col === 4 ? getAnimation(snake[0], snake[1]) : ""}
+                                />
                             )
                         }
                     </Row>
                 )
             }
+
         </div>
     )
 
