@@ -1,11 +1,12 @@
 export class Snake {
 
     constructor(height, width, x, y) {
-        this.s = [{x: x - 1, y: y}, {x: x, y: y}]
+        this.s = [{x: x - 2, y: y}, {x: x - 1, y: y}, {x: x, y: y}]
         this.dx = 1
         this.dy = 0
         this.height = height
         this.width = width
+        this.directionUpdated = false
     }
 
     isDirectionEquals(dx, dy) {
@@ -16,34 +17,57 @@ export class Snake {
         if (this.dx === -dx && this.dy === -dy) {
             return false
         }
+        if (this.directionUpdated) {
+            return false
+        }
         this.dx = dx
         this.dy = dy
+        this.directionUpdated = true
         return true
     }
 
     move(dx = 0, dy = 0, increase = false) {
-        console.log('move')
+        let cp = Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+
+        cp.s = [...cp.s].map(v => ({...v}))
+
         if (dx === 0 && dy === 0) {
-            dx = this.dx
-            dy = this.dy
+            dx = cp.dx
+            dy = cp.dy
         }
 
-        this.s.push({
-            x: (this.s.at(-1).x + dx + this.width) % this.width,
-            y: (this.s.at(-1).y + dy + this.height) % this.height
+        cp.s.push({
+            x: (cp.s.at(-1).x + dx + cp.width) % cp.width,
+            y: (cp.s.at(-1).y + dy + cp.height) % cp.height
         })
 
         if (!increase) {
-            this.s.shift()
+            cp.s.shift()
         }
         if (typeof increase === "function") {
-            console.log('func', this.s.at(-1))
-            if (!increase(this.s.at(-1))) {
-                this.s.shift()
+            if (!increase(cp.s.at(-1))) {
+                cp.s.shift()
             }
         }
 
-        console.log(this.s)
+        cp.directionUpdated = false
+        cp.dx = dx
+        cp.dy = dy
+        return cp
+    }
+
+    isFinished() {
+        let c = {}
+        for (let i in this.s) {
+            if (c?.[this.s[i].x]?.[this.s[i].y] != null) {
+                return true
+            }
+            if (c[this.s[i].x] == null) {
+                c[this.s[i].x] = {}
+            }
+            c[this.s[i].x][this.s[i].y] = true
+        }
+
     }
 
 }

@@ -23,8 +23,8 @@ export function createFieldWithSnake(snake, point) {
         field[snake[i].x][snake[i].y] = 1
     }
     field[snake.at(-1).x][snake.at(-1).y] = 2
-    field[snake[0].x][snake[0].y] = 4
     field[point.x][point.y] = 3
+    field[snake[0].x][snake[0].y] = 4
     return field
 }
 
